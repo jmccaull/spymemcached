@@ -49,19 +49,28 @@ public class SerializingTranscoder extends BaseSerializingTranscoder implements
   static final int SPECIAL_BYTEARRAY = (8 << 8);
 
   private final TranscoderUtils tu = new TranscoderUtils(true);
+  private final boolean skipJsonCompression;
 
   /**
    * Get a serializing transcoder with the default max data size.
    */
   public SerializingTranscoder() {
-    this(CachedData.MAX_SIZE);
+    this(CachedData.MAX_SIZE, true);
   }
 
   /**
    * Get a serializing transcoder that specifies the max data size.
    */
   public SerializingTranscoder(int max) {
+    this(max, true);
+  }
+
+  /**
+   * Get a serializing transcoder that specifies the max data size and configuration for json compression
+   */
+  public SerializingTranscoder(int max, boolean skipJsonCompression) {
     super(max);
+    this.skipJsonCompression = skipJsonCompression;
   }
 
   @Override
@@ -131,7 +140,7 @@ public class SerializingTranscoder extends BaseSerializingTranscoder implements
     int flags = 0;
     if (o instanceof String) {
       b = encodeString((String) o);
-      if (StringUtils.isJsonObject((String) o)) {
+      if (skipJsonCompression && StringUtils.isJsonObject((String) o)) {
         return new CachedData(flags, b, getMaxSize());
       }
     } else if (o instanceof Long) {
